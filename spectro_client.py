@@ -2,7 +2,8 @@ import json
 import socket
 import threading
 
-from PyQt6 import QtCore, QtGui, QtWidgets, uic
+from PyQt6 import QtCore, QtGui, QtWidgets
+from ui_spectro_app import Ui_SpectroApp
 
 import matplotlib
 matplotlib.use("QtAgg")
@@ -80,14 +81,14 @@ class TCPClient:
                 break
 
 
-class SpectroApp(QtWidgets.QMainWindow):
-    """Main window using PyQt6 loaded from a .ui file."""
+class SpectroApp(QtWidgets.QMainWindow, Ui_SpectroApp):
+    """Main window using PyQt6 with UI generated from .ui file."""
 
     plot_signal = QtCore.pyqtSignal(list, list)
 
     def __init__(self, host: str = "127.0.0.1", port: int = 12345):
         super().__init__()
-        self.setWindowTitle("Spectral Client")
+        self.setupUi(self)
         self.client = TCPClient(host, port)
         try:
             self.client.connect()
@@ -99,8 +100,7 @@ class SpectroApp(QtWidgets.QMainWindow):
         self.plot_signal.connect(self.plot_spectrum)
 
     def _build_ui(self):
-        """Load the UI from the Qt Designer file and wire up widgets."""
-        uic.loadUi("spectro_app.ui", self)
+        """Set up the UI components and wire up widgets."""
 
         buttons = [
             self.btnDarkRef,

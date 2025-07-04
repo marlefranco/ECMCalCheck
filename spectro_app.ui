@@ -19,6 +19,21 @@
      <layout class="QVBoxLayout" name="buttonLayout">
       <item>
        <widget class="QPushButton" name="btnDarkRef">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="text">
          <string>Dark Reference</string>
         </property>
@@ -26,6 +41,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="btnWhiteRef">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>White Reference</string>
         </property>
@@ -33,6 +60,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="btnAttWhiteRef">
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>Attenuated White Reference</string>
         </property>
@@ -40,6 +79,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="btnMercuryRef">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>Mercury Reference</string>
         </property>
@@ -47,6 +98,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="btnNeonRef">
+        <property name="minimumSize">
+         <size>
+          <width>198</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>Neon Reference</string>
         </property>
@@ -54,6 +117,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="btnAimingBeam">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>Aiming Beam</string>
         </property>
@@ -62,7 +137,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QWidget" name="plotArea"/>
+     <widget class="QWidget" name="plotArea" native="true"/>
     </item>
    </layout>
   </widget>
