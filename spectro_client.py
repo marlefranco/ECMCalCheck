@@ -1,13 +1,13 @@
 import json
 import socket
 import threading
-import tkinter as tk
-from tkinter import ttk
+
+from PyQt6 import QtCore, QtWidgets
 
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use("QtAgg")
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 
 class TCPClient:
@@ -34,7 +34,11 @@ class TCPClient:
 
     def start_listener(self, handler):
         """Start background thread to listen for messages."""
-        thread = threading.Thread(target=self._listen, args=(handler,), daemon=True)
+        thread = threading.Thread(
+            target=self._listen,
+            args=(handler,),
+            daemon=True,
+        )
         thread.start()
 
     def _listen(self, handler):
@@ -56,11 +60,14 @@ class TCPClient:
                 break
 
 
-class SpectroApp(tk.Tk):
+class SpectroApp(QtWidgets.QMainWindow):
+    """Main window using PyQt6."""
+
+    plot_signal = QtCore.pyqtSignal(list, list)
+
     def __init__(self, host: str = "127.0.0.1", port: int = 12345):
         super().__init__()
-        self.title("Spectral Client")
-        self.configure(bg="#2b2b2b")
+        self.setWindowTitle("Spectral Client")
         self.client = TCPClient(host, port)
         try:
             self.client.connect()
@@ -69,10 +76,15 @@ class SpectroApp(tk.Tk):
             print(f"Connection error: {exc}")
 
         self._build_ui()
+        self.plot_signal.connect(self.plot_spectrum)
 
     def _build_ui(self):
-        left_frame = tk.Frame(self, bg="#2b2b2b")
-        left_frame.pack(side=tk.LEFT, fill=tk.Y)
+        central_widget = QtWidgets.QWidget()
+        self.setCentralWidget(central_widget)
+        layout = QtWidgets.QHBoxLayout(central_widget)
+
+        button_layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(button_layout)
 
         button_names = [
             "Dark Reference",
@@ -83,21 +95,9 @@ class SpectroApp(tk.Tk):
             "Aiming Beam",
         ]
         for name in button_names:
-            btn = tk.Button(
-                left_frame,
-                text=name,
-                command=lambda n=name: self.client.send_command(n),
-                bg="#444444",
-                fg="white",
-                activebackground="#555555",
-                relief=tk.FLAT,
-                width=20,
-                pady=5,
-            )
-            btn.pack(fill=tk.X, padx=5, pady=5)
-
-        plot_frame = tk.Frame(self, bg="#121212")
-        plot_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+            btn = QtWidgets.QPushButton(name)
+            btn.clicked.connect(lambda _=False, n=name: self.client.send_command(n))
+            button_layout.addWidget(btn)
 
         matplotlib.rcParams.update({
             "axes.facecolor": "#121212",
@@ -112,16 +112,15 @@ class SpectroApp(tk.Tk):
         self.ax.set_xlabel("Wavelength (nm)")
         self.ax.set_ylabel("Intensity")
         self.ax.grid(True, color="#444444")
-        self.canvas = FigureCanvasTkAgg(self.figure, master=plot_frame)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas = FigureCanvasQTAgg(self.figure)
+        layout.addWidget(self.canvas, 1)
 
     def handle_message(self, message):
         """Handle JSON messages from the server."""
         wavelengths = message.get("wavelengths")
         intensities = message.get("intensities")
         if wavelengths and intensities:
-            self.after(0, self.plot_spectrum, wavelengths, intensities)
+            self.plot_signal.emit(wavelengths, intensities)
 
     def plot_spectrum(self, wavelengths, intensities):
         self.ax.cla()
@@ -133,8 +132,10 @@ class SpectroApp(tk.Tk):
 
 
 def main():
-    app = SpectroApp()
-    app.mainloop()
+    qt_app = QtWidgets.QApplication([])
+    window = SpectroApp()
+    window.show()
+    qt_app.exec()
 
 
 if __name__ == "__main__":
