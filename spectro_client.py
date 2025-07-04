@@ -2,12 +2,32 @@ import json
 import socket
 import threading
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets, uic
 
 import matplotlib
 matplotlib.use("QtAgg")
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+
+
+def apply_dark_palette(app: QtWidgets.QApplication) -> None:
+    """Apply a basic dark theme to the Qt application."""
+    app.setStyle("Fusion")
+    palette = QtGui.QPalette()
+    palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(18, 18, 18))
+    palette.setColor(QtGui.QPalette.ColorRole.WindowText, QtGui.QColor(240, 240, 240))
+    palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(30, 30, 30))
+    palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor(18, 18, 18))
+    palette.setColor(QtGui.QPalette.ColorRole.ToolTipBase, QtGui.QColor(240, 240, 240))
+    palette.setColor(QtGui.QPalette.ColorRole.ToolTipText, QtGui.QColor(240, 240, 240))
+    palette.setColor(QtGui.QPalette.ColorRole.Text, QtGui.QColor(240, 240, 240))
+    palette.setColor(QtGui.QPalette.ColorRole.Button, QtGui.QColor(30, 30, 30))
+    palette.setColor(QtGui.QPalette.ColorRole.ButtonText, QtGui.QColor(240, 240, 240))
+    palette.setColor(QtGui.QPalette.ColorRole.BrightText, QtGui.QColor(255, 0, 0))
+    palette.setColor(QtGui.QPalette.ColorRole.Link, QtGui.QColor(42, 130, 218))
+    palette.setColor(QtGui.QPalette.ColorRole.Highlight, QtGui.QColor(42, 130, 218))
+    palette.setColor(QtGui.QPalette.ColorRole.HighlightedText, QtGui.QColor(240, 240, 240))
+    app.setPalette(palette)
 
 
 class TCPClient:
@@ -61,7 +81,7 @@ class TCPClient:
 
 
 class SpectroApp(QtWidgets.QMainWindow):
-    """Main window using PyQt6."""
+    """Main window using PyQt6 loaded from a .ui file."""
 
     plot_signal = QtCore.pyqtSignal(list, list)
 
@@ -79,25 +99,19 @@ class SpectroApp(QtWidgets.QMainWindow):
         self.plot_signal.connect(self.plot_spectrum)
 
     def _build_ui(self):
-        central_widget = QtWidgets.QWidget()
-        self.setCentralWidget(central_widget)
-        layout = QtWidgets.QHBoxLayout(central_widget)
+        """Load the UI from the Qt Designer file and wire up widgets."""
+        uic.loadUi("spectro_app.ui", self)
 
-        button_layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(button_layout)
-
-        button_names = [
-            "Dark Reference",
-            "White Reference",
-            "Attenuated White Reference",
-            "Mercury Reference",
-            "Neon Reference",
-            "Aiming Beam",
+        buttons = [
+            self.btnDarkRef,
+            self.btnWhiteRef,
+            self.btnAttWhiteRef,
+            self.btnMercuryRef,
+            self.btnNeonRef,
+            self.btnAimingBeam,
         ]
-        for name in button_names:
-            btn = QtWidgets.QPushButton(name)
-            btn.clicked.connect(lambda _=False, n=name: self.client.send_command(n))
-            button_layout.addWidget(btn)
+        for btn in buttons:
+            btn.clicked.connect(lambda _=False, n=btn.text(): self.client.send_command(n))
 
         matplotlib.rcParams.update({
             "axes.facecolor": "#121212",
@@ -113,7 +127,9 @@ class SpectroApp(QtWidgets.QMainWindow):
         self.ax.set_ylabel("Intensity")
         self.ax.grid(True, color="#444444")
         self.canvas = FigureCanvasQTAgg(self.figure)
-        layout.addWidget(self.canvas, 1)
+        plot_layout = QtWidgets.QVBoxLayout(self.plotArea)
+        plot_layout.setContentsMargins(0, 0, 0, 0)
+        plot_layout.addWidget(self.canvas)
 
     def handle_message(self, message):
         """Handle JSON messages from the server."""
@@ -133,6 +149,7 @@ class SpectroApp(QtWidgets.QMainWindow):
 
 def main():
     qt_app = QtWidgets.QApplication([])
+    apply_dark_palette(qt_app)
     window = SpectroApp()
     window.show()
     qt_app.exec()
